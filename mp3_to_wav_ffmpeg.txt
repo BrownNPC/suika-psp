@@ -1,0 +1,7 @@
+ffmpeg -i input.mp3 -acodec pcm_u8 -ar 22050 -ac 1 output.wav
+
+16-bit, 44.1 kHz, stereo: 1.4 Mbit/s
+
+8-bit, 22.05 kHz, mono: 180 Kbit/s (13% original size)
+
+8-bit, 11.025 kHz, mono: 88 Kbit/s (6% original size)
