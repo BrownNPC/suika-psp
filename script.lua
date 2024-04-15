@@ -3,7 +3,7 @@
 fruit = {1,2,3,4,5,6,7,8,9,10,11}
 
 white = Color.create(255, 255, 255, 255)
-peach_color = Color.create(245, 215, 129, 255)
+peach_color = Color.create(241, 224, 129, 255)
 Graphics.set_clear_color(white)
 
 BGM = AudioClip.load('./assets/BGM.wav', 1,1)
@@ -17,14 +17,14 @@ function loadsprites()
     -- main game sprites
     cloudtexinfo = Texture.load('./assets/sprites/cloud/cloud.png', 1, 0) -- filepath, flip, vram
     cloud = Sprite.create(240, 240, 48 ,48, cloudtexinfo)
-    cloud_x, cloud_y = 240, 220
+    cloud_x, cloud_y = 240, 240
     
     line = Transform.create()
-    line:set_scale(1.5,170)
+    line:set_scale(1.5,200)
     
     container_lid = Transform.create()
-    container_lid:set_scale(152, 4)
-    container_lid:set_position(240-10, 220-42)
+    container_lid:set_scale(170, 4)
+    container_lid:set_position(242, 251-42)
 
     -- fruits
     watermelontexinfo = Texture.load('./assets/sprites/fruit/watermelon.png', 1, 0) -- filepath, flip, vram
@@ -81,7 +81,7 @@ function loadsprites()
 end
 
 function move_cloud(dt)
-    line_x, line_y = cloud_x, cloud_y-110
+    line_x, line_y = cloud_x, cloud_y-115
     if Input.button_held(PSP_LEFT) then
         cloud_x = cloud_x - dt * 200
     end
@@ -90,15 +90,15 @@ function move_cloud(dt)
     end
 
     -- left wall
-    if cloud_x < 180-20 then
-        cloud_x = 180-20
+    if cloud_x < 180 then
+        cloud_x = 180
     end
     -- right wall
-    if cloud_x > 340-35 then
-        cloud_x = 340-35
+    if cloud_x > 380-45 then
+        cloud_x = 380-45
     end
 
-    line:set_position(line_x, line_y)
+    line:set_position(line_x-15, line_y)
     cloud:set_position(cloud_x, cloud_y)
 
 end
@@ -124,9 +124,10 @@ function draw(dt)
     Primitive.draw_rectangle(container_lid, peach_color)
 
     -- fruit
-    for i = 1, #fruit do -- # means length
-        fruit[i]:draw()
-    end
+    -- for i = 1, #fruit do -- # means length
+    --     fruit[i]:draw()
+    fruit[6]:draw()
+    
 end
 
 timer = Timer.create()
