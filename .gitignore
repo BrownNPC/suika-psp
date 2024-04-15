@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Compiled Lua sources
 luac.out
 
@@ -39,3 +40,7 @@ luac.out
 *.x86_64
 *.hex
 
+=======
+.vscode
+*psd
+>>>>>>> 5482480 (First commit, cloud and box are rendering.)
