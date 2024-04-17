@@ -114,12 +114,13 @@ function loadsprites()
     fruit_sprites[10]:set_position(240, 137)
 
     cherrytexinfo = Texture.load('./assets/sprites/fruit/cherry.png', 1, 0) -- filepath, flip, vram
-    fruit_sprites[11] = Sprite.create(240, 137, 8 ,8, cherrytexinfo)
+    fruit_sprites[11] = Sprite.create(240, 137, 12 ,12, cherrytexinfo)
     fruit_sprites[11]:set_position(240, 137)
 
     -- (54.375 * fruit y)  / 100 = radius, used in collision detection
-    fruit_hitbox = {53.145, 48.314, 43.482, 38.651, 33.82, 28.988, 24.157, 19.325, 14.494, 9.663, 4.831}
-    fruit_radii = {47.851, 43.501, 39.151, 34.801, 30.451, 26.1, 21.75, 17.4, 13.05, 8.7, 4.35}
+    fruit_hitbox = {53.145, 48.314, 48.482, 42.651, 33.82, 32.988, 24.157, 19.325, 14.494, 9.663, 7.831}
+    -- fruit_radii = {47.851, 43.501, 39.151, 34.801, 30.451, 26.1, 21.75, 17.4, 13.05, 8.7, 7.831}
+    fruit_radii = {44.311, 39.101, 35.991, 30.881, 27.771, 23.66, 20.55, 16.44, 13.05, 8.7, 7.831}
 end
 
 function move_cloud(dt)
@@ -130,42 +131,36 @@ function move_cloud(dt)
     if Input.button_held(PSP_RIGHT) then
         cloud_x = cloud_x + dt * 200
     end
-
-    -- left wall
-    if cloud_x < 180 then
-        cloud_x = 180
-    end
-    -- right wall
-    if cloud_x > 380-45 then
-        cloud_x = 380-45
-    end
-
-    line:set_position(line_x-15, line_y)
-    cloud:set_position(cloud_x, cloud_y)
-    fruit_sprites[current_fruit]:set_position(line_x-15, cloud_y-15)
-
 end
 
-function spawn_fruit(dt, fruit_id)
+function spawn_fruit(dt, fruit_id, x, y)
+    x = x == nil and line_x-15 or x
+    y = y == nil and cloud_y-15 or y
     local fruit_data = {
         fruit_id = fruit_id,
         speed_x = 0,
         speed_y = -200,
-        x = line_x - 15,
-        y = cloud_y-15
+        x = x,
+        y = y
     }
-
     spawned_fruits[#spawned_fruits+1] = fruit_data
 end
 
-input_delay = 30
+dropped_fruit = false
+drop_fruit_frames = 0
 function drop_fruit(dt)
-    if Input.button_held(PSP_CROSS) then
-        if frames > 30 then
-            spawn_fruit(dt, current_fruit)
-            frames = 0
-            current_fruit, next_fruit = math.random(7,11), math.random(7,11)
+    if dropped_fruit then
+        current_fruit = next_fruit
+        drop_fruit_frames = drop_fruit_frames + 1
+        if drop_fruit_frames > 25 then
+            next_fruit = math.random(7,11)
+            drop_fruit_frames = 0
+            dropped_fruit = false
         end
+    end
+    if Input.button_held(PSP_CROSS) and not dropped_fruit then
+        spawn_fruit(dt, current_fruit)
+        dropped_fruit = true
     end
 end
 
@@ -187,48 +182,31 @@ function move_spawned_fruits(dt)
         local radius = fruit_hitbox[fruit.fruit_id]
         -- Assuming container_floor_y is the y-coordinate of the floor
         
-        if #spawned_fruits > 1 then
-            for j = #spawned_fruits, 1, -1 do
-                if i ~= j then  -- Avoid self-comparison
-                    local fruit2 = spawned_fruits[j]
-                    local radius2 = fruit_hitbox[fruit2.fruit_id]
-                    
-                    -- local distance = math.sqrt((fruit.x - fruit2.x)^2 + (fruit.y - fruit2.y))
-                    
-                    -- Check if fruit is close enough to collide
-                    
-                    -- Check for collision between fruit and fruit2
-                    if circlesCollide(fruit.x, fruit.y, radius, fruit2.x, fruit2.y, radius2) then
-                        -- Handle collision between fruit and fruit2
-                        if fruit.fruit_id == fruit2.fruit_id then
-                            table.remove(spawned_fruits, j)
-                            table.remove(spawned_fruits, i)
-                            goto continue
-                        end
-                        
-                    end
-                end
-            end
-        end
         ::continue::
         -- center - line_y - radius = depth
         radius=fruit_radii[fruit.fruit_id]
         local collision_x, collision_y = find_collision_point({x = fruit.x, y = fruit.y}, radius, {y = container_floor_y})
         if not collision_x and not collision_y then
 
+            -- if fruit.speed_y > 0 then
+                -- fruit.speed_y = fruit.speed_y - gravity 
+            -- end
+            -- fruit.speed_y = fruit.speed_y + (fruit.speed_y/10 * dt)
             fruit.y = fruit.y + (fruit.speed_y * dt)
-            fruit.speed_y = fruit.speed_y - (gravity * dt)
+            -- fruit.y = fruit.x + (fruit.speed_x * dt)
             contact_pos = fruit.y
             
         else
+
             -- fruit.y = contact_pos
+            fruit.y = fruit.y +1
             fruit.speed_y = 0
         end
         -- ::continue::
     end
 end
 
-gravity = 60
+gravity = -1
 frames = 0
 function update(dt)
     frames = frames + 1
@@ -254,12 +232,14 @@ function draw(dt)
     Primitive.draw_rectangle(container_floor, peach_color)
     fruit_sprites[current_fruit]:draw()
     draw_spawned_fruits()
+    fruit_sprites[next_fruit]:set_position(320+90,251-50) -- next fruit
+    fruit_sprites[next_fruit]:draw()
     
 end
 
 timer = Timer.create()
 loadsprites()
-
+frames = 0
 while QuickGame.running() do
     Input.update()
 
