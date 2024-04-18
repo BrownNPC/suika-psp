@@ -1,7 +1,7 @@
 import math
 
 
-nums = [i * 8 for i in range(1, 12)]
+nums = [i * 2 for i in range(1, 12)]
 nums = nums[::-1]
 arr = []
 # magic_num = 60.392
@@ -11,7 +11,7 @@ for num in nums:
     # radius = radius / 10000
     radius = round(radius,3) / 100
     
-    print(radius)
+    # print(radius)
     arr.append(round(radius,3))
 
 print(arr)

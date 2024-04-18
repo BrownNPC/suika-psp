@@ -1,15 +1,16 @@
 local Vector = require "vector"
 local physics = {}
 
-local g = 9.81
+-- local g = 9.81
+local g = 1
 local pi = 3.14159265359
 
 function math.clamp(low, n, high) return math.min(math.max(n, low), high) end
 
-function physics.calculatePhysics(fruits, step, width, height)
+function physics.calculatePhysics(fruits, step, left_wall,right_wall, height)
   for i, fruit in ipairs(fruits) do
     -- check horizontal bounds
-    if fruit.position.x + fruit.width >= width or fruit.position.x <= 0 then
+    if fruit.position.x + fruit.width >= right_wall or fruit.position.x + fruit.width <= 350 then
       -- bounce from the sides
       fruit.velocity.x = -fruit.velocity.x
     end
@@ -17,9 +18,17 @@ function physics.calculatePhysics(fruits, step, width, height)
     -- check vertical bounds
     if fruit.position.y + fruit.height >= height and fruit.acceleration.y >= 0 then
       -- bounce from the bottom
-      fruit.acceleration.y = -(fruit.acceleration.y * 0.75)
+      fruit.acceleration.y = -(fruit.acceleration.y * 0.1)
       fruit.velocity.y = -fruit.velocity.y
     end
+
+    -- local x_before = fruit.position.x
+    -- local y_before = fruit.position.y
+
+    -- local x_prev = fruit.prev_pos.x
+    -- local y_prev = fruit.prev_pos.y
+
+    -- fruit.position.y = fruit.position.y 
 
     -- usual stuff
     local scale = step / 100 --????? why not 1000? t: author
@@ -29,7 +38,8 @@ function physics.calculatePhysics(fruits, step, width, height)
     fruit.position.x = fruit.position.x + fruit.velocity.x
 
     -- keep the fruits from going out of screen bounds
-    fruit.position.x = math.clamp(0, fruit.position.x, width - fruit.width)
+    -- fruit.position.x = math.clamp(0, fruit.position.x, right_wall - fruit.width)
+    fruit.position.x = math.clamp(0,fruit.position.x,  left_wall + fruit.width)
     fruit.position.y = math.clamp(0, fruit.position.y, height - fruit.height)
 
     for j, otherfruit in ipairs(fruits) do
@@ -78,9 +88,9 @@ function physics.resolveCollision(fruit, otherfruit)
     return
   end
 
-  if distance < 128 then
+  if distance < fruit.diameter then
     -- resolve fruits being inside each other?
-    distance = 135
+    distance = distance + fruit.diameter + otherfruit.diameter
   end
 
   collision.x = collision.x / distance
