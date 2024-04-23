@@ -78,19 +78,19 @@ function physics.resolveCollision(fruit, otherfruit)
   local mtdY = collision.y * (((fruit.radius + otherfruit.radius)-distance)/distance)
 
   -- move the fruits away from each other
-  fruit.position.x = fruit.position.x + mtdX
+  -- fruit.position.x = fruit.position.x + mtdX
   fruit.position.y = fruit.position.y + mtdY
 
-  otherfruit.position.x = otherfruit.position.x - mtdX
-  otherfruit.position.y = otherfruit.position.y - mtdY
+  -- otherfruit.position.x = otherfruit.position.x 
+  -- otherfruit.position.y = otherfruit.position.y 
 
   if distance == 0.0 then
     return
   end
 
-  if distance < fruit.diameter then
+  if distance <= fruit.radius + otherfruit.radius then
     -- resolve fruits being inside each other?
-    distance = distance + fruit.diameter + otherfruit.diameter
+    distance = distance + fruit.radius + otherfruit.radius
   end
 
   collision.x = collision.x / distance
