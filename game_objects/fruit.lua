@@ -13,7 +13,8 @@ function Fruit.new(pos, id, sprite)
     self.position = pos
     self.shape = HC.circle(pos.x, pos.y, self.radius)
 
-    self.speed_x, self.speed_y = 0, 0
+    self.speed_x, self.speed_y = 0, 21
+    self.gravity = 300
     self.has_collided = false
     self.sprite:resize(fruits_config[self.n].size.x / self.scale,
          fruits_config[self.n].size.y / self.scale)

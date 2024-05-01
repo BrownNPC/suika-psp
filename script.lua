@@ -26,7 +26,6 @@ function init()
     cloud = Objects.cloud.new(Vector(screen_width/2 , 4), 165, 315) --pos, right wall, left wall
     has_collided = true
     floor = HC.rectangle(70, screen_height, screen_width-70, screen_height-22)
-
     gravity = 600
 end
 
@@ -82,7 +81,9 @@ function physics(dt)
 
                 if collision == true then
                     otherfruit.shape:move(-dx, -dy)
-                    fruit.shape:move(dx, dy)
+                    -- fruit.shape:move(dx, dy)
+                    otherfruit.speed_x = -dx  
+                    otherfruit.speed_y = -dy + 100  
                     
                     if otherfruit == newfruit then -- allow spawning of new fruits
                         has_collided = true
@@ -95,13 +96,17 @@ function physics(dt)
         -- gravity and movement and wall+floor collisons
         for i = 1, #spawned_fruits do
             local fruit = spawned_fruits[i]
-            fruit.shape:move(0, 0) -- gravity
+
+            fruit.shape:move(fruit.speed_x * dt, fruit.speed_y * dt)
+
+            fruit.speed_y = fruit.speed_y + gravity * dt
             -- check collision with  floor
             local collision, dx, dy = fruit.shape:collidesWith(floor)
             if collision == true then
                 fruit.shape:move(dx, dy)
                 if fruit == newfruit then -- allow spawning of new fruits
                     has_collided = true
+                    fruit.speed_y = 0
                 end
             end
             
@@ -110,9 +115,6 @@ function physics(dt)
             if x < 170 then
                 fruit.shape:moveTo(170, y)
 
-                if fruit == newfruit then -- allow spawning of new fruits
-                    has_collided = true
-                end
                 -- table.remove(spawned_fruits, i)
             elseif x > 170+140 then
                 fruit.shape:moveTo(170+140, y)
@@ -145,6 +147,9 @@ function draw_sprites(dt)
         spawned_fruits[i].draw()
     end
     screen.print(10, 10,  #spawned_fruits, white_color)
+    if newfruit then
+        screen.print(10, 20,  newfruit.speed_y .. " " .. newfruit.speed_x, white_color)
+    end
 end
 
 
