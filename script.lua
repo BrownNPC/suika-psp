@@ -12,6 +12,7 @@ function init()
     running = true
     timer = timer.new()
     timer:start()
+    math.randomseed(1000)
     -- Initialize variables for delta time calculation
     utils.lastFrameTime = timer:time()
     screen_width = 460
@@ -23,7 +24,10 @@ function init()
     
     spawned_fruits = {}
     cloud = Objects.cloud.new(Vector(screen_width/2 , 4), 165, 315) --pos, right wall, left wall
-    newfruit = {has_collided = true} --initial blank object, will be deleted
+    has_collided = true
+    floor = HC.rectangle(70, screen_height, screen_width-70, screen_height-22)
+
+    gravity = 600
 end
 
 function loadsprites()
@@ -54,19 +58,80 @@ function move_cloud(dt)
         cloud.move_right(dt)
     end
 
-    if controls.cross() and newfruit.has_collided == true then
+    if controls.cross() and has_collided == true then
         local sprite = fruit_sprites[next_fruit_id]
         newfruit = Objects.fruit.new(Vector(cloud.position.x, cloud.position.y), next_fruit_id, sprite)
         spawned_fruits[#spawned_fruits+1] = newfruit
         next_fruit_id = math.random(1,5)
+        has_collided = false
+
     end
 end
 
-function update(dt)
-    -- screen.print(0, 170, dt, blue)
-    move_cloud(dt)
-    chipmunk.space.step(sp, dt)
+function physics(dt)
+    if #spawned_fruits  then
+
+        for i = 1, #spawned_fruits-1 do
+            local fruit = spawned_fruits[i]
+            -- local shape = fruit.shape
+            for j = i +1, #spawned_fruits do
+
+                local otherfruit = spawned_fruits[j]
+                
+                local collision, dx, dy = fruit.shape:collidesWith(otherfruit.shape)
+
+                if collision == true then
+                    otherfruit.shape:move(-dx, -dy)
+                    fruit.shape:move(dx, dy)
+                    
+                    if otherfruit == newfruit then -- allow spawning of new fruits
+                        has_collided = true
+                    end
+                end
+
+            end
+        end
+
+        -- gravity and movement and wall+floor collisons
+        for i = 1, #spawned_fruits do
+            local fruit = spawned_fruits[i]
+            fruit.shape:move(0, 0) -- gravity
+            -- check collision with  floor
+            local collision, dx, dy = fruit.shape:collidesWith(floor)
+            if collision == true then
+                fruit.shape:move(dx, dy)
+                if fruit == newfruit then -- allow spawning of new fruits
+                    has_collided = true
+                end
+            end
+            
+            -- check collision with walls 
+            local x,y = fruit.shape:center()
+            if x < 170 then
+                fruit.shape:moveTo(170, y)
+
+                if fruit == newfruit then -- allow spawning of new fruits
+                    has_collided = true
+                end
+                -- table.remove(spawned_fruits, i)
+            elseif x > 170+140 then
+                fruit.shape:moveTo(170+140, y)
+                -- table.remove(spawned_fruits, i)
+            end
+
+        end
+    end
+end
+
     
+
+
+function update(dt)
+    if frames % 2 == 0 then
+        physics(dt)
+    end
+    move_cloud(dt)
+    -- chipmunk.space.step(sp, dt)    
 end
 
 function draw_sprites(dt)
@@ -79,11 +144,12 @@ function draw_sprites(dt)
     for i = 1, #spawned_fruits do
         spawned_fruits[i].draw()
     end
+    screen.print(10, 10,  #spawned_fruits, white_color)
 end
 
 
 init()
-
+frames = 0
 while running do
     controls.read()
     
@@ -94,5 +160,9 @@ while running do
     update(dt)
     
     screen.flip()
+    frames = frames + 1
+    if frames== 60 then
+        frames = 0
+    end
     screen.waitvblankstart()
 end

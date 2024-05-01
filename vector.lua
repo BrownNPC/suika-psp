@@ -36,8 +36,17 @@ function Vector:dot(v)
   return self.x * v.x + self.y * v.y
 end
 
-function Vector:len()
-  return math.sqrt(self.x * self.x + self.y * self.y)
+function Vector:dist(v)
+  local dx = self.x - v.x
+  local dy = self.y - v.y
+  return math.sqrt(dx * dx + dy * dy)
+end
+
+function Vector:normalize()
+  local dist = self:dist()
+  return new(self.x / len, self.y / len)
+  
+
 end
 
 return setmetatable({new = new, zero = zero},
